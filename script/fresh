@@ -4,7 +4,7 @@ function main {
   local shome="$(cd -P -- "${BASH_SOURCE%/*}/.." && pwd -P)"
   source "$shome/script/profile"
 
-  if [[ "$($shome/script/version | jq -r '.tmux')" != "$TMUX_VERSION" ]]; then
+  if ! type -P tmux >/dev/null; then
     return 1
   fi
 
