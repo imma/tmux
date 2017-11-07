@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+function main {
+  local shome="$(cd -P -- "${BASH_SOURCE%/*}/.." && pwd -P)"
+  source "${BLOCK_PATH:-"$shome/work"}/block/script/profile" ~
+  source normalize  
+
+  local nm_session="$1"; shift
+
+  tmux -CC -L "$nm_session" attach ||  tmux -CC -L "$nm_session"
+}
+
+source sub "$BASH_SOURCE" "$@"
