@@ -17,6 +17,9 @@ function main {
       hst_remote="${nm_spec}"
       nm_session="${hst_remote%%.*}"
       ;;
+    *)
+      nm_session="$nm_spec"
+      ;;
   esac
 
   local hst_loader=
