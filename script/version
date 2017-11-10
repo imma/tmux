@@ -4,8 +4,14 @@ function version {
   local shome="$(cd -P -- "${BASH_SOURCE%/*}/.." && pwd -P)"
   source "$shome/script/profile"
 
-  local ver_tmux="$(tmux -V 2>/dev/null || true)"
-  jq -n --arg tmux "$ver_tmux" '{tmux: $tmux}'
+  cd "$shome"
+
+  local ver_tmux="$(tmux -V 2>/dev/null | awk '{print $2}' || true)"
+  local ver_tmuxinator="$( bundle exec bin/tmuxinator version 2>/dev/null | awk '{print $2}' || true)"
+  jq -n \
+    --arg tmux "$ver_tmux" \
+    --arg tmuxinator "$ver_tmuxinator" \
+    '{tmux: $tmux, tmuxinator: $tmuxinator}'
 }
 
 version "$@"

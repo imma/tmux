@@ -5,6 +5,10 @@ function main {
   source "$shome/script/profile"
 
   pkg ensure misc/tmux
+
+  mkdir -p "$shome/bin"
+  block compile bundler
+  ln -nfs "$(bundle exec which tmuxinator)" "$shome/bin/"
 }
 
 main "$@"
