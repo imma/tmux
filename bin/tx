@@ -24,7 +24,7 @@ function main {
 
   local hst_loader=
   if [[ -n "$hst_remote" ]]; then
-    hst_loader="ssh -t $hst_remote $@"
+    hst_loader="ssh -t $hst_remote $@ env TERM_PROGRAM=${TERM_PROGRAM:-} CUE_SCHEME=${CUE_SCHEME:-}"
   fi
   $hst_loader tmux -CC -L "$nm_session" attach || $hst_loader tmux -CC -L "$nm_session"
 }
