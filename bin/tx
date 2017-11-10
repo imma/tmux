@@ -5,9 +5,25 @@ function main {
   source "${BLOCK_PATH:-"$shome/work"}/block/script/profile" ~
   source normalize  
 
-  local nm_session="$1"; shift
+  local nm_spec="${1}"; shift
+  local hst_remote=
 
-  tmux -CC -L "$nm_session" attach ||  tmux -CC -L "$nm_session"
+  case "$nm_spec" in
+    */*)
+      hst_remote="${nm_spec%%/*}"
+      nm_session="${nm_spec##*/}"
+      ;;
+    *.*)
+      hst_remote="${nm_spec}"
+      nm_session="${hst_remote%%.*}"
+      ;;
+  esac
+
+  local hst_loader=
+  if [[ -n "$hst_remote" ]]; then
+    hst_loader="ssh -t $hst_remote $@"
+  fi
+  $hst_loader tmux -CC -L "$nm_session" attach || $hst_loader tmux -CC -L "$nm_session"
 }
 
 source sub "$BASH_SOURCE" "$@"
