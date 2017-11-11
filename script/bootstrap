@@ -8,7 +8,6 @@ function main {
 
   mkdir -p "$shome/bin"
   block compile bundler
-  ln -nfs "$(bundle exec which tmuxinator)" "$shome/bin/"
 }
 
 main "$@"
