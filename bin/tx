@@ -11,7 +11,7 @@ function main {
 
   local loader=
   if [[ -n "$hst_remote" ]]; then
-    loader="ssh -tA $hst_remote"
+    loader="ssh $hst_remote"
   fi
 
   gpg2 --card-status
@@ -23,7 +23,10 @@ function main {
 
   wait
 
-  $loader -R "${pth_socket}":/tmp/S.forwarded bash -c "env | grep SSH_AUTH; ln -nfs \${SSH_AUTH_SOCK} \$HOME/.ssh/ssh_auth_sock; export TERM_PROGRAM=${TERM_PROGRAM:-} CUE_SCHEME=${CUE_SCHEME:-}; tmux -CC attach || tmux -CC" 
+  if [[ "$#" == 0 ]]; then
+    set -- attach
+  fi
+  $loader -tA -R "${pth_socket}":/tmp/S.forwarded bash -c "env | grep SSH_AUTH; ln -nfs \${SSH_AUTH_SOCK} \$HOME/.ssh/ssh_auth_sock; export TERM_PROGRAM=${TERM_PROGRAM:-} CUE_SCHEME=${CUE_SCHEME:-}; exec tmux -CC $@" 
 }
 
 source sub "$BASH_SOURCE" "$@"
