@@ -6,6 +6,14 @@ function main {
   source normalize  
 
   export BUNDLE_GEMFILE="$shome/Gemfile"
+  case "${1:-}" in
+    start)
+      if [[ -z "${2:-}" ]]; then
+        set -- default
+      fi
+      ;;
+  esac
+
   bundle exec tmuxinator "$@"
 }
 
