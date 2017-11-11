@@ -24,11 +24,21 @@ function main {
 
   set -x
 
-  local hst_loader=
+  local loader=
   if [[ -n "$hst_remote" ]]; then
-    hst_loader="ssh -tA $hst_remote $@"
+    loader="ssh -tA $hst_remote"
   fi
-  $hst_loader bash -c "env | grep SSH_AUTH; ln -nfs \${SSH_AUTH_SOCK} \$HOME/.ssh/ssh_auth_sock; export TERM_PROGRAM=${TERM_PROGRAM:-} CUE_SCHEME=${CUE_SCHEME:-}; tmux -CC -L $nm_session attach || tmux -CC -L $nm_session"
+
+  gpg2 --card-status
+  
+  $loader pkill -9 gpg-agent || true &
+
+  local pth_socket="$($loader gpgconf --list-dir agent-socket | perl -pe 's{\s+$}{}')"
+  $loader rm -fv "${pth_socket}" &
+
+  wait
+
+  $loader -R "${pth_socket}":/tmp/S.forwarded bash -c "env | grep SSH_AUTH; ln -nfs \${SSH_AUTH_SOCK} \$HOME/.ssh/ssh_auth_sock; export TERM_PROGRAM=${TERM_PROGRAM:-} CUE_SCHEME=${CUE_SCHEME:-}; tmux -CC -L $nm_session attach || tmux -CC -L $nm_session"
 }
 
 source sub "$BASH_SOURCE" "$@"
