@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+function main {
+  local shome="$(cd -P -- "${BASH_SOURCE%/*}/.." && pwd -P)"
+  source "${BLOCK_PATH:-"$shome/work"}/block/script/profile" ~
+  source normalize  
+
+  if [[ -z "${1:-}" ]]; then
+    tmux list-sessions
+    return 0
+  fi
+
+  local nm_session="${1}"; shift
+
+  tmux switch-client -t "$nm_session"
+}
+
+source sub "$BASH_SOURCE" "$@"
