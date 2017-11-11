@@ -26,9 +26,9 @@ function main {
 
   local hst_loader=
   if [[ -n "$hst_remote" ]]; then
-    hst_loader="ssh -tA $hst_remote $@ env TERM_PROGRAM=${TERM_PROGRAM:-} CUE_SCHEME=${CUE_SCHEME:-}"
+    hst_loader="ssh -tA $hst_remote $@"
   fi
-  $hst_loader bash -c "env | grep SSH_AUTH; ln -nfs \${SSH_AUTH_SOCK} \$HOME/.ssh/ssh_auth_sock; tmux -CC -L $nm_session attach || tmux -CC -L $nm_session"
+  $hst_loader bash -c "env | grep SSH_AUTH; ln -nfs \${SSH_AUTH_SOCK} \$HOME/.ssh/ssh_auth_sock; export TERM_PROGRAM=${TERM_PROGRAM:-} CUE_SCHEME=${CUE_SCHEME:-}; tmux -CC -L $nm_session attach || tmux -CC -L $nm_session"
 }
 
 source sub "$BASH_SOURCE" "$@"
