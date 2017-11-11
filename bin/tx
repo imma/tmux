@@ -5,23 +5,8 @@ function main {
   source "${BLOCK_PATH:-"$shome/work"}/block/script/profile" ~
   source normalize  
 
-  local nm_spec="${1}"; shift
-  local hst_remote=
-
-  case "$nm_spec" in
-    */*)
-      hst_remote="${nm_spec%%/*}"
-      nm_session="${nm_spec##*/}"
-      ;;
-    *.*)
-      hst_remote="${nm_spec}"
-      nm_session="${hst_remote%%.*}"
-      ;;
-    *)
-      nm_session="$nm_spec"
-      ;;
-  esac
-
+  local hst_remote="${1}"; shift
+  
   set -x
 
   local loader=
@@ -38,7 +23,7 @@ function main {
 
   wait
 
-  $loader -R "${pth_socket}":/tmp/S.forwarded bash -c "env | grep SSH_AUTH; ln -nfs \${SSH_AUTH_SOCK} \$HOME/.ssh/ssh_auth_sock; export TERM_PROGRAM=${TERM_PROGRAM:-} CUE_SCHEME=${CUE_SCHEME:-}; tmux -CC -L $nm_session attach || tmux -CC -L $nm_session"
+  $loader -R "${pth_socket}":/tmp/S.forwarded bash -c "env | grep SSH_AUTH; ln -nfs \${SSH_AUTH_SOCK} \$HOME/.ssh/ssh_auth_sock; export TERM_PROGRAM=${TERM_PROGRAM:-} CUE_SCHEME=${CUE_SCHEME:-}; tmux -CC attach || tmux -CC" 
 }
 
 source sub "$BASH_SOURCE" "$@"
