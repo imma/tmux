@@ -7,13 +7,15 @@ function main {
 
   export BUNDLE_GEMFILE="$shome/Gemfile"
   case "${1:-}" in
-    start)
+    start|edit)
       if [[ -z "${2:-}" ]]; then
         set -- default
       fi
       ;;
   esac
 
+  : ${EDITOR:=vim}
+  export EDITIOR
   bundle exec tmuxinator "$@"
 }
 
