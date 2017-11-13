@@ -16,18 +16,21 @@ function main {
 
   gpg2 --card-status
   
-  $loader pkill -9 gpg-agent || true &
 
   local pth_socket="$($loader gpgconf --list-dir agent-socket | perl -pe 's{\s+$}{}')"
-  $loader rm -fv "${pth_socket}" &
 
-  wait
+  if [[ -n "$pth_socket" ]]; then
+    $loader pkill -9 gpg-agent || true &
+    $loader rm -fv "${pth_socket}" &
+    wait
+  fi
+
 
   if [[ "$#" == 0 ]]; then
     set -- attach
   fi
   export TX_GPG="$(gpg2 --card-status | awk '/General key info/ {print $NF}' | cut -d'<' -f2 | cut -d'>' -f1)"
-  $loader -tA -R "${pth_socket}":/tmp/S.forwarded bash -c "env | grep SSH_AUTH; ln -nfs \${SSH_AUTH_SOCK} \$HOME/.ssh/ssh_auth_sock; export TERM_PROGRAM=${TERM_PROGRAM:-} CUE_SCHEME=${CUE_SCHEME:-} TX_GPG=${TX_GPG:-}; exec tmux -CC $@" 
+  $loader -tA ${pth_socket:+-R "${pth_socket}":/tmp/S.forwarded} bash -c "env | grep SSH_AUTH; ln -nfs \${SSH_AUTH_SOCK} \$HOME/.ssh/ssh_auth_sock; export TERM_PROGRAM=${TERM_PROGRAM:-} CUE_SCHEME=${CUE_SCHEME:-} TX_GPG=${TX_GPG:-}; exec tmux -CC $@" 
 }
 
 source sub "$BASH_SOURCE" "$@"
