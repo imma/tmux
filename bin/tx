@@ -17,7 +17,7 @@ function main {
   gpg2 --card-status
   
 
-  local pth_socket="$($loader gpgconf --list-dir agent-socket | perl -pe 's{\s+$}{}')"
+  local pth_socket="$($loader gpgconf --list-dir | grep agent-socket: | perl -pe 's{agent-socket:}{};s{\s+$}{}')"
 
   if [[ -n "$pth_socket" ]]; then
     $loader pkill -9 gpg-agent || true &
