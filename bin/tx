@@ -32,6 +32,7 @@ function main {
     set -- attach
   fi
   export TX_GPG="$(gpg2 --card-status | awk '/General key info/ {print $NF}' | cut -d'<' -f2 | cut -d'>' -f1)"
+  gpg2 --export -a "$TX_GPG" | $loader gpg2 --import
   $loader -tA ${pth_socket:+-R "${pth_socket}":/tmp/S.forwarded} bash -c "env | grep SSH_AUTH; ln -nfs \${SSH_AUTH_SOCK} \$HOME/.ssh/ssh_auth_sock; export TERM_PROGRAM=${TERM_PROGRAM:-} CUE_SCHEME=${CUE_SCHEME:-} TX_GPG=${TX_GPG:-}; exec tmux -CC $@" 
 }
 
