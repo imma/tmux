@@ -12,10 +12,13 @@ function main {
   local loader=
   if [[ -n "$hst_remote" ]]; then
     loader="ssh $hst_remote"
+    rsync -ia ~/.aws $hst_remote:
+    if [[ -d ~/.awsvault ]]; then
+      rsync -ia ~/.awsvault  $hst_remote:
+    fi
   fi
 
   gpg2 --card-status
-  
 
   local pth_socket="$($loader gpgconf --list-dir | grep agent-socket: | perl -pe 's{agent-socket:}{};s{\s+$}{}')"
 
@@ -24,7 +27,6 @@ function main {
     $loader rm -fv "${pth_socket}" &
     wait
   fi
-
 
   if [[ "$#" == 0 ]]; then
     set -- attach
