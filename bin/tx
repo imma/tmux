@@ -6,21 +6,17 @@ function main {
   source normalize  
 
   local hst_remote="${1}"; shift
+  local loader="ssh $hst_remote"
   
   set -x
 
   export TX_GPG="$(gpg2 --card-status | awk '/General key info/ {print $NF}' | cut -d'<' -f2 | cut -d'>' -f1)"
   gpg2 --export -a "$TX_GPG" | $loader gpg2 --import &
 
-  local loader=
-  if [[ -n "$hst_remote" ]]; then
-    loader="ssh $hst_remote"
-    rsync -ia ~/.aws $hst_remote: &
-    if [[ -d ~/.awsvault ]]; then
-      rsync -ia ~/.awsvault  $hst_remote: &
-    fi
+  rsync -ia ~/.aws $hst_remote: &
+  if [[ -d ~/.awsvault ]]; then
+    rsync -ia ~/.awsvault  $hst_remote: &
   fi
-
 
   local pth_socket="$($loader gpgconf --list-dir | grep agent-socket: | perl -pe 's{agent-socket:}{};s{\s+$}{}')"
   if [[ -n "$pth_socket" ]]; then
