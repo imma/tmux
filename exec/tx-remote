@@ -10,7 +10,9 @@ function main {
 
   case "${CUE_SCHEME:-}" in
     slight|sdark)
-      "${CUE_SCHEME}"
+      mkdir -p "${BOARD_PATH}/.env.d"
+      trap "rm -f ${BOARD_PATH}/.env.d/CUE_SCHEME" EXIT
+      echo "${CUE_SCHEME}" > "${BOARD_PATH}/.env.d/CUE_SCHEME"
       ;;
   esac
 
