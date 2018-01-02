@@ -8,10 +8,13 @@ function main {
   local hst_remote="${1}"; shift
   local loader="ssh $hst_remote"
   
-  set -x
+  $loader tmux detach-client -s 0 || true &
+
+  local fn_remote=".tx-remote"
+  rsync -ia "$(which tx-remote)" "$hst_remote:$fn_remote" &
 
   if [[ "$hst_remote" != "localhost" ]]; then
-    export TX_GPG="$(gpg2 --card-status | awk '/General key info/ {print $NF}' | cut -d'<' -f2 | cut -d'>' -f1)"
+    export TX_GPG="$(gpg2 --card-status 2>/dev/null | awk '/General key info/ {print $NF}' | cut -d'<' -f2 | cut -d'>' -f1)"
     gpg2 --export -a "$TX_GPG" | $loader gpg2 --import &
 
     rsync -ia ~/.aws $hst_remote: &
@@ -26,11 +29,11 @@ function main {
     fi
   fi
 
-  $loader tmux detach-client -s 0 || true &
-
   wait
 
-  $loader -tA ${pth_socket:+-R "${pth_socket}":/tmp/S.forwarded} bash -c "env | grep SSH_AUTH; sudo chown ubuntu:ubuntu .gnupg/S.gpg-agent || true; ln -nfs \${SSH_AUTH_SOCK} \$HOME/.ssh/ssh_auth_sock; export TERM_PROGRAM=${TERM_PROGRAM:-} CUE_SCHEME=${CUE_SCHEME:-} TX_GPG=${TX_GPG:-}; tmux -CC attach || tmux -CC" 
+  $loader -tA ${pth_socket:+-R "${pth_socket}":/tmp/S.forwarded} \
+    -o ServerAliveInterval=30 -o ServerAliveCountMax=3 \
+        env TERM_PROGRAM=${TERM_PROGRAM:-} CUE_SCHEME=${CUE_SCHEME:-} TX_GPG=${TX_GPG:-} "$fn_remote"
 }
 
 source sub "$BASH_SOURCE" "$@"

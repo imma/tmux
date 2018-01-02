@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+function main {
+  set -efu
+
+  cd
+  source ".bash_profile"
+
+  ln -nfs "${SSH_AUTH_SOCK}" "$HOME/.ssh/ssh_auth_sock"
+
+  case "${CUE_SCHEME:-}" in
+    slight|sdark)
+      "${CUE_SCHEME}"
+      ;;
+  esac
+
+  tmux -CC attach || tmux -CC
+}
+
+source sub "$BASH_SOURCE" "$@"
