@@ -30,10 +30,7 @@ function main {
 
   wait
 
-  if [[ "$#" == 0 ]]; then
-    set -- attach
-  fi
-  $loader -tA ${pth_socket:+-R "${pth_socket}":/tmp/S.forwarded} bash -c "env | grep SSH_AUTH; sudo chown ubuntu:ubuntu .gnupg/S.gpg-agent || true; ln -nfs \${SSH_AUTH_SOCK} \$HOME/.ssh/ssh_auth_sock; export TERM_PROGRAM=${TERM_PROGRAM:-} CUE_SCHEME=${CUE_SCHEME:-} TX_GPG=${TX_GPG:-}; exec tmux -CC $@" 
+  $loader -tA ${pth_socket:+-R "${pth_socket}":/tmp/S.forwarded} bash -c "env | grep SSH_AUTH; sudo chown ubuntu:ubuntu .gnupg/S.gpg-agent || true; ln -nfs \${SSH_AUTH_SOCK} \$HOME/.ssh/ssh_auth_sock; export TERM_PROGRAM=${TERM_PROGRAM:-} CUE_SCHEME=${CUE_SCHEME:-} TX_GPG=${TX_GPG:-}; tmux -CC attach || tmux -CC" 
 }
 
 source sub "$BASH_SOURCE" "$@"
