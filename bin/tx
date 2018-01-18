@@ -34,9 +34,17 @@ function main {
 
   wait
 
+  if [[ "$#" == 0 ]]; then
+    set -- attach
+  fi
+
+  if [[ "$1" == "" ]]; then
+    set --
+  fi
+
   $loader -tA ${pth_socket:+-R "${pth_socket}":/tmp/S.forwarded} \
     -o ServerAliveInterval=30 -o ServerAliveCountMax=3 \
-        env TERM_PROGRAM=${TERM_PROGRAM:-} CUE_SCHEME=${CUE_SCHEME:-} TX_GPG=${TX_GPG:-} "$fn_remote"
+        env TERM_PROGRAM=${TERM_PROGRAM:-} CUE_SCHEME=${CUE_SCHEME:-} TX_GPG=${TX_GPG:-} "$fn_remote" "$@"
 }
 
 source sub "$BASH_SOURCE" "$@"
