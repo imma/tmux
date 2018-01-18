@@ -21,6 +21,9 @@ function main {
     if [[ -d ~/.awsvault ]]; then
       rsync -ia ~/.awsvault  $hst_remote: &
     fi
+    if [[ -d ~/.op ]]; then
+      (set +f; rsync -ia ~/.op/* $hst_remote:.op/) &
+    fi
 
     local pth_socket="$($loader gpgconf --list-dir | grep agent-socket: | perl -pe 's{agent-socket:}{};s{\s+$}{}')"
     if [[ -n "$pth_socket" ]]; then
