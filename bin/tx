@@ -6,8 +6,10 @@ function main {
   source normalize  
 
   local hst_remote="${1}"; shift
-  local loader="ssh $hst_remote"
-  
+  local loader="ssh $hst_remote -o ControlPath=$HOME/.ssh/cm-%r-%h-$$ -o ControlMaster=no"
+
+  ssh $hst_remote -o ControlPath="$HOME/.ssh/cm-%r-%h-$$" -o ControlMaster=yes -o ControlPersist=10m true
+
   $loader tmux detach-client -s 0 || true &
 
   local fn_remote=".tx-remote"
@@ -33,6 +35,7 @@ function main {
   fi
 
   wait
+  $loader -O exit
 
   if [[ "$#" == 0 ]]; then
     set -- attach
@@ -42,8 +45,8 @@ function main {
     set --
   fi
 
-  $loader -tA ${pth_socket:+-R "${pth_socket}":/tmp/S.forwarded} \
-    -o ServerAliveInterval=30 -o ServerAliveCountMax=3 \
+  ssh $hst_remote -tA ${pth_socket:+-R "${pth_socket}":/tmp/S.forwarded} \
+    -o ServerAliveInterval=30 -o ServerAliveCountMax=3 -o ControlMaster=no -S none \
         env TERM_PROGRAM=${TERM_PROGRAM:-} CUE_SCHEME=${CUE_SCHEME:-} TX_GPG=${TX_GPG:-} "$fn_remote" "$@"
 }
 
