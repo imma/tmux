@@ -18,7 +18,7 @@ function main {
     (
       gpg2 --export -a "$TX_GPG" | $loader gpg2 --import
       gpg2 --export-ownertrust | $loader gpg2 --import-ownertrust
-    )
+    ) &
 
     rsync -ia ~/.aws $hst_remote: &
     if [[ -d ~/.awsvault ]]; then
