@@ -25,11 +25,13 @@ function main {
       (set +f; rsync -ia ~/.op/* $hst_remote:.op/) &
     fi
 
+    (
     local pth_socket="$($loader gpgconf --list-dir | grep agent-socket: | perl -pe 's{agent-socket:}{};s{\s+$}{}')"
     if [[ -n "$pth_socket" ]]; then
       $loader pkill -9 gpg-agent || true &
       $loader rm -fv "${pth_socket}" &
     fi
+    ) &
   fi
 
   wait
