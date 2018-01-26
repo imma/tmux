@@ -19,7 +19,7 @@ function main {
 
     rsync -ia ~/.aws $hst_remote: &
     if [[ -d ~/.awsvault ]]; then
-      rsync -ia ~/.awsvault  $hst_remote: &
+      rsync -ia ~/.awsvault  --exclude '*session*' $hst_remote: &
     fi
     if [[ -d ~/.op ]]; then
       (set +f; rsync -ia ~/.op/* $hst_remote:.op/) &
