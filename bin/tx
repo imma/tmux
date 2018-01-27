@@ -15,29 +15,37 @@ function main {
 
   if [[ "$hst_remote" != "localhost" ]]; then
     export TX_GPG="$(gpg2 --card-status 2>/dev/null | awk '/General key info/ {print $NF}' | cut -d'<' -f2 | cut -d'>' -f1)"
-    (
-      gpg2 --export -a "$TX_GPG" | $loader gpg2 --import
-      gpg2 --export-ownertrust | $loader gpg2 --import-ownertrust
-    ) &
+    gpg2 --export -a "$TX_GPG" | $loader gpg2 --import
+    gpg2 --export-ownertrust | $loader gpg2 --import-ownertrust
 
-    rsync -ia ~/.aws $hst_remote: &
-    if [[ -d ~/.awsvault ]]; then
-      rsync -ia ~/.awsvault  --exclude '*session*' $hst_remote: &
-    fi
-    if [[ -d ~/.op ]]; then
-      (set +f; rsync -ia ~/.op/* $hst_remote:.op/) &
-    fi
-
-    (
     local pth_socket="$($loader gpgconf --list-dir | grep agent-socket: | perl -pe 's{agent-socket:}{};s{\s+$}{}')"
     if [[ -n "$pth_socket" ]]; then
-      $loader pkill -9 gpg-agent || true &
-      $loader rm -fv "${pth_socket}" &
+      $loader pkill -9 gpg-agent || true
+      $loader rm -fv "${pth_socket}"
     fi
-    ) &
+
+    (
+      cd "$HOME/tmp"
+      rm -rf "${hst_remote}.mnt"
+      cf create "${hst_remote}" -r iam12@defn.sh -r iam20@defn.sh
+      cf mount "${hst_remote}.mnt" "${hst_remote}"
+      touch "${hst_remote}/.done"
+      cf unmount "${hst_remote}"
+    )
+
+    rsync -ia "$HOME/tmp/${hst_remote}.mnt/." $hst_remote:tmp/secrets.mnt/.
+
+    $loader cf unmount /secrets || true
+
+    rsync -ia ~/.aws $hst_remote:
+    if [[ -d ~/.awsvault ]]; then
+      rsync -ia ~/.awsvault  --exclude '*session*' $hst_remote:
+    fi
+    if [[ -d ~/.op ]]; then
+      (set +f; rsync -ia ~/.op/* $hst_remote:.op/)
+    fi
   fi
 
-  wait
   $loader -O exit
 
   if [[ "$#" == 0 ]]; then
