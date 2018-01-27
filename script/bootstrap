@@ -6,8 +6,13 @@ function main {
 
   pkg ensure misc/tmux
 
-  mkdir -p "$shome/bin"
   block compile bundler
+
+  block compile pipenv install --three "$@"
+  local pth_tmuxp="$(pipenv run which tmuxp)"
+
+  mkdir -p "$shome/bin"
+  ln -nfs "$pth_tmuxp" "$shome/bin/"
 }
 
 main "$@"

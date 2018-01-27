@@ -1,3 +1,6 @@
-vendor
+/vendor
+/bin/tmuxp
+Pipfile.lock
+Pipfile.lock
 .bundle
 Gemfile.lock
