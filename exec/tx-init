@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+function main {
+  local shome="$(cd -P -- "${BASH_SOURCE%/*}/.." && pwd -P)"
+  source "${BLOCK_PATH:-"$shome/work"}/block/script/profile" ~
+  source normalize  
+
+  local hst_remote="${1}"; shift
+  local loader="ssh $hst_remote"
+
+  $loader mkdir -p tmp/secrets.mnt
+
+  if [[ "$hst_remote" != "localhost" ]]; then
+    local TX_GPG="$(gpg2 --card-status 2>/dev/null | awk '/General key info/ {print $NF}' | cut -d'<' -f2 | cut -d'>' -f1)"
+    gpg2 --export -a "$TX_GPG" | $loader gpg2 --import
+    gpg2 --export-ownertrust | $loader gpg2 --import-ownertrust
+  fi
+
+  $loader tmux new -d -s default bash
+}
+
+source sub "$BASH_SOURCE" "$@"

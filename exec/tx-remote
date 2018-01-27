@@ -16,7 +16,7 @@ function main {
       ;;
   esac
 
-  exec tmux -CC "$@"
+  tmux -CC "$@" || tmux -CC
 }
 
 source sub "$BASH_SOURCE" "$@"

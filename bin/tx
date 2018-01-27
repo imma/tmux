@@ -11,13 +11,11 @@ function main {
   ssh $hst_remote -o ControlPath="$HOME/.ssh/cm-%r-%h-$$" -o ControlMaster=yes -o ControlPersist=1m tmux detach-client -s 0 || true
 
   local fn_remote=".tx-remote"
-  rsync -ia "$(which tx-remote)" "$hst_remote:$fn_remote" &
+  rsync -ia "$(which tx-remote)" "$hst_remote:$fn_remote"
+
+  export TX_GPG="$(gpg2 --card-status 2>/dev/null | awk '/General key info/ {print $NF}' | cut -d'<' -f2 | cut -d'>' -f1)"
 
   if [[ "$hst_remote" != "localhost" ]]; then
-    export TX_GPG="$(gpg2 --card-status 2>/dev/null | awk '/General key info/ {print $NF}' | cut -d'<' -f2 | cut -d'>' -f1)"
-    gpg2 --export -a "$TX_GPG" | $loader gpg2 --import
-    gpg2 --export-ownertrust | $loader gpg2 --import-ownertrust
-
     local pth_socket="$($loader gpgconf --list-dir | grep agent-socket: | perl -pe 's{agent-socket:}{};s{\s+$}{}')"
     if [[ -n "$pth_socket" ]]; then
       $loader pkill -9 gpg-agent || true
@@ -50,10 +48,6 @@ function main {
 
   if [[ "$#" == 0 ]]; then
     set -- attach
-  fi
-
-  if [[ "$1" == "" ]]; then
-    set --
   fi
 
   ssh $hst_remote -tA ${pth_socket:+-R "${pth_socket}":/tmp/S.forwarded} \
