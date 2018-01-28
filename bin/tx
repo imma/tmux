@@ -25,7 +25,7 @@ function main {
     (
       cd "$HOME/tmp"
       rm -rf "${hst_remote}.mnt"
-      cf create "${hst_remote}" -r iam12@defn.sh -r iam20@defn.sh
+      cf create "${hst_remote}" -r "${TX_GPG}"
       cf mount "${hst_remote}.mnt" "${hst_remote}"
       touch "${hst_remote}/.done"
       cf unmount "${hst_remote}"
