@@ -33,7 +33,7 @@ function main {
 
     rsync -ia "$HOME/tmp/${hst_remote}.mnt/." $hst_remote:tmp/secrets.mnt/.
 
-    $loader cf unmount /secrets || true
+    $loader cf unmount secrets || true
 
     rsync -ia ~/.aws $hst_remote:
     if [[ -d ~/.awsvault ]]; then
