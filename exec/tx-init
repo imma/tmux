@@ -14,6 +14,7 @@ function main {
     gpg2 --export-ownertrust | $loader gpg2 --import-ownertrust
   fi
 
+  $loader mkdir -p tmp/secrets.mnt
   $loader tmux new -d -s default bash
 }
 
