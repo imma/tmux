@@ -53,7 +53,7 @@ function main {
   figlet -w 200 "$hst_remote"
   ssh $hst_remote -tA ${pth_socket:+-R "${pth_socket}":/tmp/S.forwarded} \
     -o ServerAliveInterval=30 -o ServerAliveCountMax=3 -o ControlMaster=no -S none \
-        env TERM_PROGRAM=${TERM_PROGRAM:-} CUE_SCHEME=${CUE_SCHEME:-} TX_GPG=${TX_GPG:-} "$fn_remote" "$@"
+    "$@" env TERM_PROGRAM=${TERM_PROGRAM:-} CUE_SCHEME=${CUE_SCHEME:-} TX_GPG=${TX_GPG:-} "$fn_remote"
 }
 
 source sub "$BASH_SOURCE" "$@"
