@@ -15,7 +15,7 @@ function main {
   fi
 
   $loader mkdir -p tmp/secrets.mnt
-  $loader tmux new -d -s default bash
+  $loader tmux new -d -s initial bash
 }
 
 source sub "$BASH_SOURCE" "$@"
