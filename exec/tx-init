@@ -6,7 +6,7 @@ function main {
   source normalize  
 
   local hst_remote="${1}"; shift
-  local loader="ssh $hst_remote"
+  local loader="ssh $hst_remote $@"
 
   if [[ "$hst_remote" != "localhost" ]]; then
     local TX_GPG="$(gpg2 --card-status 2>/dev/null | awk '/General key info/ {print $NF}' | cut -d'<' -f2 | cut -d'>' -f1)"
