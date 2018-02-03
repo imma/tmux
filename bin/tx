@@ -5,6 +5,7 @@ function main {
   source "${BLOCK_PATH:-"$shome/work"}/block/script/profile" ~
   source normalize  
 
+  set -x
   local hst_remote="${1}"; shift
   local loader="ssh $hst_remote -o ControlPath=$HOME/.ssh/cm-%r-%h-$$ -o ControlMaster=no $*"
   local rsync="ssh -o ControlPath=$HOME/.ssh/cm-%r-%h-$$ -o ControlMaster=no $*"
@@ -12,7 +13,7 @@ function main {
   ssh $hst_remote -o ControlPath="$HOME/.ssh/cm-%r-%h-$$" -o ControlMaster=yes -o ControlPersist=1m "$@" tmux detach-client -s 0 || true
 
   local fn_remote=".tx-remote"
-  rsync -ia -e "$rsync" "$(which tx-remote)" "$hst_remote:$fn_remote"
+  rsync -ia -e "$rsync" "$(which tx-remote)" "[$hst_remote]:$fn_remote"
 
   export TX_GPG="$(gpg2 --card-status 2>/dev/null | awk '/General key info/ {print $NF}' | cut -d'<' -f2 | cut -d'>' -f1)"
 
@@ -32,16 +33,16 @@ function main {
       cf unmount "${hst_remote}"
     )
 
-    rsync -ia -e "$rsync" "$HOME/tmp/${hst_remote}.mnt/." $hst_remote:tmp/secrets.mnt/.
+    rsync -ia -e "$rsync" "$HOME/tmp/${hst_remote}.mnt/." "[$hst_remote]":tmp/secrets.mnt/.
 
     $loader cf unmount secrets || true
 
-    rsync -ia -e "$rsync" ~/.aws $hst_remote:
+    rsync -ia -e "$rsync" ~/.aws "[$hst_remote]":
     if [[ -d ~/.awsvault ]]; then
-      rsync -ia -e "$rsync" ~/.awsvault  --exclude '*session*' $hst_remote:
+      rsync -ia -e "$rsync" ~/.awsvault  --exclude '*session*' "[$hst_remote]":
     fi
     if [[ -d ~/.op ]]; then
-      (set +f; rsync -ia -e "$rsync"  ~/.op/* $hst_remote:.op/)
+      (set +f; rsync -ia -e "$rsync"  ~/.op/* "[$hst_remote]":.op/)
     fi
   fi
 
