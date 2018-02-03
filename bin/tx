@@ -24,18 +24,20 @@ function main {
       $loader rm -fv "${pth_socket}"
     fi
 
-    (
-      cd "$HOME/tmp"
-      rm -rf "${hst_remote}.mnt"
-      cf create "${hst_remote}" -r "${TX_GPG}"
-      cf mount "${hst_remote}.mnt" "${hst_remote}"
-      touch "${hst_remote}/.done"
-      cf unmount "${hst_remote}"
-    )
+    if false; then
+      (
+        cd "$HOME/tmp"
+        rm -rf "${hst_remote}.mnt"
+        cf create "${hst_remote}" -r "${TX_GPG}"
+        cf mount "${hst_remote}.mnt" "${hst_remote}"
+        touch "${hst_remote}/.done"
+        cf unmount "${hst_remote}"
+      )
 
-    rsync -ia -e "$rsync" "$HOME/tmp/${hst_remote}.mnt/." "[$hst_remote]":tmp/secrets.mnt/.
+      rsync -ia -e "$rsync" "$HOME/tmp/${hst_remote}.mnt/." "[$hst_remote]":tmp/secrets.mnt/.
 
-    $loader cf unmount secrets || true
+      $loader cf unmount secrets || true
+    fi
 
     rsync -ia -e "$rsync" ~/.aws "[$hst_remote]":
     if [[ -d ~/.awsvault ]]; then

@@ -16,8 +16,6 @@ function main {
     fi
   fi
 
-  $loader mkdir -p tmp/secrets.mnt
-  $loader block compile service zerotier || true
   $loader script/server screen || true
   $loader tmux new -d txm start default
 }
