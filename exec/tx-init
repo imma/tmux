@@ -17,7 +17,7 @@ function main {
   fi
 
   $loader script/server screen || true
-  $loader tmux new -d txm start default
+  $loader tmux new -d txm start default || true
   tx "$hst_remote"
 }
 
