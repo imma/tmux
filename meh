@@ -1,3 +1,0 @@
-tell application "iTerm"
-  create window with default profile command "bash -c 'sleep 99'"
-end tell

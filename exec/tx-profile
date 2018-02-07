@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+function main {
+  local shome="$(cd -P -- "${BASH_SOURCE%/*}/.." && pwd -P)"
+  source "${BLOCK_PATH:-"$shome/work"}/block/script/profile" ~
+  source normalize  
+
+  echo -n -e "\033]1337;SetProfile=$*\007"
+}
+
+source sub "$BASH_SOURCE" "$@"
