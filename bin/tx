@@ -16,7 +16,7 @@ function main {
   local loader="ssh $hst_remote -o ControlPath=$HOME/.ssh/cm-%r-%h-$$ -o ControlMaster=no $*"
   local rsync="ssh -o ControlPath=$HOME/.ssh/cm-%r-%h-$$ -o ControlMaster=no $*"
 
-  ssh $hst_remote -o ControlPath="$HOME/.ssh/cm-%r-%h-$$" -o ControlMaster=yes -o ControlPersist=1m "$@" tmux detach-client -s 0 || true
+  ssh $hst_remote -o ControlPath="$HOME/.ssh/cm-%r-%h-$$" -o ControlMaster=yes -o ControlPersist=1m tmux detach-client -s 0 || true
 
   local fn_remote=".tx-remote"
   rsync -ia -e "$rsync" "$(which tx-remote)" "$hst_rsync:$fn_remote"
@@ -43,7 +43,7 @@ function main {
     tx title "${1:-${hst_remote}}"
     ssh $hst_remote -tA ${pth_socket:+-R "${pth_socket}":/tmp/S.forwarded} \
       -o ServerAliveInterval=30 -o ServerAliveCountMax=3 -o ControlMaster=no -S none \
-      "$@" env TERM_PROGRAM=${TERM_PROGRAM:-} CUE_SCHEME=${CUE_SCHEME:-} "$fn_remote" attach
+        env TERM_PROGRAM=${TERM_PROGRAM:-} CUE_SCHEME=${CUE_SCHEME:-} "$fn_remote" attach
   done
 }
 
