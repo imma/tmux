@@ -7,7 +7,7 @@ function main {
 
   local nm_key="${1}"; shift
 
-  tx "$(consul kv get "${nm_key}")"
+  tx "$(consul kv get "${nm_key}")" "${nm_key}"
 }
 
 source sub "$BASH_SOURCE" "$@"
