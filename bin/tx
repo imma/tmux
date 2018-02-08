@@ -21,28 +21,11 @@ function main {
   local fn_remote=".tx-remote"
   rsync -ia -e "$rsync" "$(which tx-remote)" "$hst_rsync:$fn_remote"
 
-  export TX_GPG="$(gpg2 --card-status 2>/dev/null | awk '/General key info/ {print $NF}' | cut -d'<' -f2 | cut -d'>' -f1)"
-
   if [[ "$hst_remote" != "localhost" ]]; then
     local pth_socket="$($loader gpgconf --list-dir | grep agent-socket: | perl -pe 's{agent-socket:}{};s{\s+$}{}')"
     if [[ -n "$pth_socket" ]]; then
       $loader pkill -9 gpg-agent || true
       $loader rm -fv "${pth_socket}"
-    fi
-
-    if false; then
-      (
-        cd "$HOME/tmp"
-        rm -rf "${hst_remote}.mnt"
-        cf create "${hst_remote}" -r "${TX_GPG}"
-        cf mount "${hst_remote}.mnt" "${hst_remote}"
-        touch "${hst_remote}/.done"
-        cf unmount "${hst_remote}"
-      )
-
-      rsync -ia -e "$rsync" "$HOME/tmp/${hst_remote}.mnt/." "$hst_rsync":tmp/secrets.mnt/.
-
-      $loader cf unmount secrets || true
     fi
 
     rsync -ia -e "$rsync" ~/.aws "$hst_rsync":
@@ -60,7 +43,7 @@ function main {
     figlet -w 200 "$hst_remote"
     ssh $hst_remote -tA ${pth_socket:+-R "${pth_socket}":/tmp/S.forwarded} \
       -o ServerAliveInterval=30 -o ServerAliveCountMax=3 -o ControlMaster=no -S none \
-      "$@" env TERM_PROGRAM=${TERM_PROGRAM:-} CUE_SCHEME=${CUE_SCHEME:-} TX_GPG=${TX_GPG:-} "$fn_remote" attach
+      "$@" env TERM_PROGRAM=${TERM_PROGRAM:-} CUE_SCHEME=${CUE_SCHEME:-} "$fn_remote" attach
   done
 }
 
