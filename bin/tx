@@ -6,6 +6,14 @@ function main {
   source normalize  
 
   local hst_remote="${1}"; shift
+
+  case "${hst_remote}" in
+    */*)
+      tx kv "${hst_remote}" "$@"
+      return $?
+      ;;
+  esac
+
   local hst_rsync="$hst_remote"
   case "$hst_rsync" in
     *:*:*)
