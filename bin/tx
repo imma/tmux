@@ -43,6 +43,9 @@ function main {
     if [[ -d ~/.op ]]; then
       (set +f; rsync -ia -e "$rsync"  ~/.op/* "$hst_rsync":.op/)
     fi
+    if [[ -d ~/.hab/cache/keys ]]; then
+      (set +f; rsync -ia -e "$rsync"  ~/.hab/cache/keys/. "$hst_rsync":.hab/cache/keys/.)
+    fi
   fi
 
   $loader -O exit
