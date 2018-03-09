@@ -46,6 +46,8 @@ function main {
     if [[ -d ~/.hab/cache/keys ]]; then
       (set +f; rsync -ia -e "$rsync"  ~/.hab/cache/keys/. "$hst_rsync":.hab/cache/keys/.)
     fi
+
+    gpg2 --card-status 2>&1 | grep 'General key info' | awk '{print $NF}' | cut -d'<' -f2 | cut -d'>' -f1 | $loader tee .config/gpg-recipient
   fi
 
   $loader -O exit
