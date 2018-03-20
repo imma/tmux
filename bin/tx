@@ -21,10 +21,10 @@ function main {
       ;;
   esac
 
-  local loader="ssh $hst_remote -o ControlPath=$HOME/.ssh/cm-%r-%h-$$ -o ControlMaster=no"
-  local rsync="ssh -o ControlPath=$HOME/.ssh/cm-%r-%h-$$ -o ControlMaster=no"
+  local loader="ssh $hst_remote"
+  local rsync="ssh"
 
-  ssh $hst_remote -o ControlPath="$HOME/.ssh/cm-%r-%h-$$" -o ControlMaster=yes -o ControlPersist=1m tmux detach-client -s default || true
+  ssh $hst_remote detach-client -s default || true
 
   local fn_remote=".tx-remote"
   rsync -ia -e "$rsync" "$(which tx-remote)" "$hst_rsync:$fn_remote"
@@ -49,8 +49,6 @@ function main {
 
     gpg2 --card-status 2>&1 | grep 'General key info' | awk '{print $NF}' | cut -d'<' -f2 | cut -d'>' -f1 | $loader tee .config/gpg-recipient
   fi
-
-  $loader -O exit
 
   tx title "${1:-${hst_remote}}"
   ssh $hst_remote -tA ${pth_socket:+-R "${pth_socket}":/tmp/S.forwarded} \
