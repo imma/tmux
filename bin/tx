@@ -24,7 +24,7 @@ function main {
   local loader="ssh $hst_remote"
   local rsync="ssh"
 
-  ssh $hst_remote detach-client -s default || true
+  ssh $hst_remote tmux detach-client -s default || true
 
   local fn_remote=".tx-remote"
   rsync -ia -e "$rsync" "$(which tx-remote)" "$hst_rsync:$fn_remote"
@@ -47,7 +47,7 @@ function main {
       (set +f; rsync -ia -e "$rsync"  ~/.hab/cache/keys/. "$hst_rsync":.hab/cache/keys/.)
     fi
 
-    gpg2 --card-status 2>&1 | grep 'General key info' | awk '{print $NF}' | cut -d'<' -f2 | cut -d'>' -f1 | $loader tee .config/gpg-recipient
+    gpg2 --card-status 2>&1 | grep 'General key info' | awk '{print $NF}' | cut -d'<' -f2 | cut -d'>' -f1 | $loader tee .env.d/CONFIG_GPG_RECIPIENT
   fi
 
   tx title "${1:-${hst_remote}}"
