@@ -47,6 +47,7 @@ function main {
       (set +f; rsync -ia -e "$rsync"  ~/.hab/cache/keys/. "$hst_rsync":.hab/cache/keys/.)
     fi
 
+    $loader mkdir -p .env.d
     gpg2 --card-status 2>&1 | grep 'General key info' | awk '{print $NF}' | cut -d'<' -f2 | cut -d'>' -f1 | $loader tee .env.d/CONFIG_GPG_RECIPIENT
   fi
 
