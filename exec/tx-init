@@ -16,10 +16,11 @@ function main {
         gpg2 --export-ownertrust | $loader gpg2 --import-ownertrust
       fi
     fi
-  fi
+  fi &
 
-  $loader cp .gitconfig.template .gitconfig
   $loader tmux new -d txm start default || true
+
+  wait
   tx "$hst_remote"
 }
 

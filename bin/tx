@@ -24,32 +24,38 @@ function main {
   local loader="ssh $hst_remote"
   local rsync="ssh"
 
-  ssh $hst_remote tmux detach-client -s default || true
+  ssh $hst_remote tmux detach-client -s default || true &
 
   local fn_remote=".tx-remote"
-  rsync -ia -e "$rsync" "$(which tx-remote)" "$hst_rsync:$fn_remote"
+  rsync -ia -e "$rsync" "$(which tx-remote)" "$hst_rsync:$fn_remote" &
 
   if [[ "$hst_remote" != "localhost" ]]; then
-    local pth_socket="$($loader gpgconf --list-dir | grep agent-socket: | perl -pe 's{agent-socket:}{};s{\s+$}{}')"
-    if [[ -n "$pth_socket" ]]; then
-      $loader pkill -9 gpg-agent || true
-      $loader rm -fv "${pth_socket}"
-    fi
+    (
+      local pth_socket="$($loader gpgconf --list-dir | grep agent-socket: | perl -pe 's{agent-socket:}{};s{\s+$}{}')"
+      if [[ -n "$pth_socket" ]]; then
+        $loader pkill -9 gpg-agent || true
+        $loader rm -fv "${pth_socket}"
+      fi
+    ) &
 
-    rsync -ia -e "$rsync" ~/.aws "$hst_rsync":
+    rsync -ia -e "$rsync" ~/.aws "$hst_rsync": &
     if [[ -d ~/.awsvault ]]; then
-      rsync -ia -e "$rsync" ~/.awsvault  --exclude '*session*' "$hst_rsync":
+      rsync -ia -e "$rsync" ~/.awsvault  --exclude '*session*' "$hst_rsync": &
     fi
     if [[ -d ~/.op ]]; then
-      (set +f; rsync -ia -e "$rsync"  ~/.op/* "$hst_rsync":.op/)
+      (set +f; rsync -ia -e "$rsync"  ~/.op/* "$hst_rsync":.op/) &
     fi
     if [[ -d ~/.hab/cache/keys ]]; then
-      (set +f; rsync -ia -e "$rsync"  ~/.hab/cache/keys/. "$hst_rsync":.hab/cache/keys/.)
+      (set +f; rsync -ia -e "$rsync"  ~/.hab/cache/keys/. "$hst_rsync":.hab/cache/keys/.) &
     fi
+
+    wait
 
     $loader mkdir -p .env.d
     gpg2 --card-status 2>&1 | grep 'General key info' | awk '{print $NF}' | cut -d'<' -f2 | cut -d'>' -f1 | $loader tee .env.d/CONFIG_GPG_RECIPIENT
-  fi
+  fi &
+
+  wait
 
   tx title "${1:-${hst_remote}}"
   ssh $hst_remote -tA ${pth_socket:+-R "${pth_socket}":/tmp/S.forwarded} \
