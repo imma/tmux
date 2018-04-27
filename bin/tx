@@ -3,7 +3,7 @@
 function main {
   local shome="$(cd -P -- "${BASH_SOURCE%/*}/.." && pwd -P)"
   source "${BLOCK_PATH:-"$shome/work"}/block/script/profile" ~
-  source normalize  
+  source normalize
 
   local hst_remote="${1}"; shift
 
@@ -21,48 +21,45 @@ function main {
       ;;
   esac
 
-  local loader="ssh $hst_remote"
-  local rsync="ssh"
+  local cmd_ssh="ssh $hst_remote 2>/dev/null"
+  local cmd_rsync="rsync -ia 2>/dev/null"
 
-  ssh $hst_remote tmux detach-client -s default || true &
+  $cmd_ssh mkdir -p .env.d .hab/cache/keys .op .aws .awsvault &
+  $cmd_ssh tmux detach-client -s default || true &
+  local pth_socket="$($cmd_ssh gpgconf --list-dir | grep agent-socket: | perl -pe 's{agent-socket:}{};s{\s+$}{}')"
+  (
+    if [[ -n "$pth_socket" ]]; then
+      $cmd_ssh pkill -9 gpg-agent || true
+      $cmd_ssh rm -fv "${pth_socket}"
+    fi
+  ) &
 
   local fn_remote=".tx-remote"
-  rsync -ia -e "$rsync" "$(which tx-remote)" "$hst_rsync:$fn_remote" &
+  $cmd_rsync "$(which tx-remote)" "$hst_rsync:$fn_remote" &
 
-  if [[ "$hst_remote" != "localhost" ]]; then
-    (
-      local pth_socket="$($loader gpgconf --list-dir | grep agent-socket: | perl -pe 's{agent-socket:}{};s{\s+$}{}')"
-      if [[ -n "$pth_socket" ]]; then
-        $loader pkill -9 gpg-agent || true
-        $loader rm -fv "${pth_socket}"
-      fi
-    ) &
+  $cmd_rsync ~/.aws "$hst_rsync": &
 
-    rsync -ia -e "$rsync" ~/.aws "$hst_rsync": &
-    if [[ -d ~/.awsvault ]]; then
-      rsync -ia -e "$rsync" ~/.awsvault  --exclude '*session*' "$hst_rsync": &
-    fi
-    if [[ -d ~/.op ]]; then
-      (set +f; rsync -ia -e "$rsync"  ~/.op/* "$hst_rsync":.op/) &
-    fi
-    if [[ -d ~/.hab/cache/keys ]]; then
-      (set +f; rsync -ia -e "$rsync"  ~/.hab/cache/keys/. "$hst_rsync":.hab/cache/keys/.) &
-    fi
+  if [[ -d ~/.awsvault ]]; then
+    $cmd_rsync ~/.awsvault --exclude '*session*' "$hst_rsync":
+  fi &
 
-    wait
+  if [[ -d ~/.op ]]; then
+    (set +f; $cmd_rsync ~/.op/* "$hst_rsync":.op/)
+  fi &
 
-    $loader mkdir -p .env.d
-    gpg2 --card-status 2>&1 | grep 'General key info' | awk '{print $NF}' | cut -d'<' -f2 | cut -d'>' -f1 | $loader tee .env.d/CONFIG_GPG_RECIPIENT
+  if [[ -d ~/.hab/cache/keys ]]; then
+    (set +f; $cmd_rsync ~/.hab/cache/keys/. "$hst_rsync":.hab/cache/keys/.)
   fi &
 
   wait
 
+  gpg2 --card-status 2>&1 | grep 'General key info' | awk '{print $NF}' | cut -d'<' -f2 | cut -d'>' -f1 | $cmd_ssh tee .env.d/CONFIG_GPG_RECIPIENT
+
   tx title "${1:-${hst_remote}}"
 
-  set -x
   ssh $hst_remote -tA ${pth_socket:+-R "${pth_socket}":/tmp/S.forwarded} \
     -o ServerAliveInterval=30 -o ServerAliveCountMax=3 -o ControlMaster=no -S none \
-      env TERM_PROGRAM=${TERM_PROGRAM:-} CUE_SCHEME=${CUE_SCHEME:-} "./$fn_remote" attach
+      env TERM_PROGRAM=${TERM_PROGRAM:-} CUE_SCHEME=${CUE_SCHEME:-} ./$fn_remote attach
 }
 
 source sub "$BASH_SOURCE" "$@"
