@@ -24,8 +24,14 @@ function main {
   local cmd_ssh="ssh $hst_remote"
   local cmd_rsync="rsync -ia"
 
+  local nm_session="${1:-default}"
+  if [[ -n "${1:-}" ]]; then
+    shift
+  fi
+
   $cmd_ssh mkdir -p .env.d .hab/cache/keys .op .aws .awsvault &
-  $cmd_ssh tmux detach-client -s default || true &
+  ($cmd_ssh tmux detach-client -s "${nm_session}" || true; $cmd_ssh tmux new-session -d "txm start ${nm_session}" || true) &
+
   local pth_socket="$($cmd_ssh gpgconf --list-dir | grep agent-socket: | perl -pe 's{agent-socket:}{};s{\s+$}{}')"
   (
     if [[ -n "$pth_socket" ]]; then
@@ -56,10 +62,9 @@ function main {
   gpg2 --card-status 2>&1 | grep 'General key info' | awk '{print $NF}' | cut -d'<' -f2 | cut -d'>' -f1 | $cmd_ssh tee .env.d/CONFIG_GPG_RECIPIENT
 
   tx title "${1:-${hst_remote}}"
-
   ssh $hst_remote -tA ${pth_socket:+-R "${pth_socket}":/tmp/S.forwarded} \
     -o ServerAliveInterval=30 -o ServerAliveCountMax=3 -o ControlMaster=no -S none \
-      env TERM_PROGRAM=${TERM_PROGRAM:-} CUE_SCHEME=${CUE_SCHEME:-} ./$fn_remote attach
+      env TERM_PROGRAM=${TERM_PROGRAM:-} CUE_SCHEME=${CUE_SCHEME:-} ./$fn_remote attach -t "${nm_session}"
 }
 
 source sub "$BASH_SOURCE" "$@"
