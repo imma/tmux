@@ -15,7 +15,7 @@ function main {
     exec tmux -CC attach -t "${nm_session}"
   else
     txm start "${nm_session}" || true
-    txm start "${nm_session}"
+    exec txm start "${nm_session}"
   fi
 }
 
