@@ -16,6 +16,7 @@ function main {
       if $loader which gpg2; then
         gpg2 --export -a "$TX_GPG" | $loader gpg2 --import
         gpg2 --export-ownertrust | $loader gpg2 --import-ownertrust
+        $loader gpg2 --check-trustdb
       fi
     fi
   fi &
