@@ -30,7 +30,6 @@ function main {
   fi
 
   $cmd_ssh mkdir -p .env.d .op .aws .awsvault &
-  $cmd_ssh tmux detach-client -s "${nm_session}" || true &
 
   local pth_socket="$($cmd_ssh gpgconf --list-dir | grep agent-socket: | perl -pe 's{agent-socket:}{};s{\s+$}{}')"
   (
