@@ -10,13 +10,12 @@ function main {
 
   local nm_session="$1"; shift
 
-  if tmux has-session -t "${nm_session}" 2>/dev/null; then
-    tmux detach-client -s "${nm_session}" 2>/dev/null || true
-    exec tmux -CC attach -t "${nm_session}"
-  else
-    txm start "${nm_session}" || true
-    exec txm start "${nm_session}"
+  if ! tmux has-session -t "${nm_session}" 2>/dev/null; then
+    txm start "${nm_session}"
   fi
+
+  tmux detach-client -s "${nm_session}" 2>/dev/null || true
+  exec tmux -CC attach -t "${nm_session}"
 }
 
 source sub "$BASH_SOURCE" "$@"
