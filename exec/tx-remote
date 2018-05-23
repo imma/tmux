@@ -8,15 +8,13 @@ function main {
 
   ln -nfs "${SSH_AUTH_SOCK}" "$HOME/.ssh/ssh_auth_sock"
 
-  case "${CUE_SCHEME:-}" in
-    slight|sdark)
-      mkdir -p "${HOME}/.env.d"
-      trap "rm -f ${HOME}/.env.d/CUE_SCHEME" EXIT
-      echo "${CUE_SCHEME}" > "${HOME}/.env.d/CUE_SCHEME"
-      ;;
-  esac
+  local nm_session="$1"; shift
 
-  exec tmux -CC "$@"
+  if tmux has-session -t "${nm_session}" 2>/dev/null; then
+    exec tmux -CC attach -t "${nm_session}"
+  fi
+
+  exec txm start "${nm_session}"
 }
 
 source sub "$BASH_SOURCE" "$@"

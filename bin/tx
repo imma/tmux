@@ -29,7 +29,7 @@ function main {
     shift
   fi
 
-  $cmd_ssh mkdir -p .env.d .hab/cache/keys .op .aws .awsvault &
+  $cmd_ssh mkdir -p .env.d .op .aws .awsvault &
   $cmd_ssh tmux detach-client -s "${nm_session}" || true &
 
   local pth_socket="$($cmd_ssh gpgconf --list-dir | grep agent-socket: | perl -pe 's{agent-socket:}{};s{\s+$}{}')"
@@ -53,18 +53,16 @@ function main {
     (set +f; $cmd_rsync ~/.op/* "$hst_rsync":.op/)
   fi &
 
-  if [[ -d ~/.hab/cache/keys ]]; then
-    (set +f; $cmd_rsync ~/.hab/cache/keys/. "$hst_rsync":.hab/cache/keys/.)
-  fi &
+  gpg2 --card-status 2>&1 | grep 'General key info' | awk '{print $NF}' | cut -d'<' -f2 | cut -d'>' -f1 | $cmd_ssh tee .env.d/CONFIG_GPG_RECIPIENT >/dev/null &
+  echo "${TERM_PROGRAM:-}" | $cmd_ssh tee .env.d/TERM_PROGRAM >/dev/null &
+  echo "${CUE_SCHEME:-}" | $cmd_ssh tee .env.d/CUE_SCHEME >/dev/null &
 
   wait
 
-  gpg2 --card-status 2>&1 | grep 'General key info' | awk '{print $NF}' | cut -d'<' -f2 | cut -d'>' -f1 | $cmd_ssh tee .env.d/CONFIG_GPG_RECIPIENT
-
   tx title "${1:-${hst_remote}}"
-  ssh $hst_remote -tA ${pth_socket:+-R "${pth_socket}":/tmp/S.forwarded} \
+  exec ssh $hst_remote -tA ${pth_socket:+-R "${pth_socket}":/tmp/S.forwarded} \
     -o ServerAliveInterval=30 -o ServerAliveCountMax=3 -o ControlMaster=no -S none \
-      env TERM_PROGRAM=${TERM_PROGRAM:-} CUE_SCHEME=${CUE_SCHEME:-} ./$fn_remote attach -t "${nm_session}" || true
+      ./$fn_remote "${nm_session}"
 }
 
 source sub "$BASH_SOURCE" "$@"
