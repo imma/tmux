@@ -10,13 +10,8 @@ function main {
 
   local nm_session="$1"; shift
 
-  if ! tmux ls 2>/dev/null; then
-    tmux new -d
-  fi
-
-  tmux detach-client -s "${nm_session}" 2>/dev/null || true
-
   if tmux has-session -t "${nm_session}" 2>/dev/null; then
+    tmux detach-client -s "${nm_session}" 2>/dev/null || true
     exec tmux -CC attach -t "${nm_session}"
   else
     txm start "${nm_session}" || true
