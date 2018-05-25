@@ -16,7 +16,12 @@ function main {
 
   : ${EDITOR:=vim}
   export EDITIOR
-  bundle exec tmuxinator "$@"
+
+  if type -P tmuxinator >/dev/null; then
+    exec tmuxinator "$@"
+  else
+    bundle exec tmuxinator "$@"
+  fi
 }
 
 source sub "$BASH_SOURCE" "$@"
