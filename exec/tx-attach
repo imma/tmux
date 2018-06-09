@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+
+function main {
+  local shome="$(cd -P -- "${BASH_SOURCE%/*}/.." && pwd -P)"
+  source "${BLOCK_PATH:-"$shome/work"}/block/script/profile" ~
+  source normalize
+
+  local hst_remote="${1}"; shift
+
+  local hst_rsync="$hst_remote"
+  case "$hst_rsync" in
+    *:*:*)
+      hst_rsync="[$hst_rsync]"
+      ;;
+  esac
+
+  local cmd_ssh="ssh $hst_remote"
+  local cmd_rsync="rsync -ia"
+
+  local nm_session="${1:-default}"
+  if [[ -n "${1:-}" ]]; then
+    shift
+  fi
+
+  $cmd_ssh mkdir -p .env.d .op .aws .awsvault &
+
+  local pth_socket="$($cmd_ssh gpgconf --list-dir | grep agent-socket: | perl -pe 's{agent-socket:}{};s{\s+$}{}')"
+  (
+    if [[ -n "$pth_socket" ]]; then
+      $cmd_ssh pkill -9 gpg-agent || true
+      $cmd_ssh rm -fv "${pth_socket}"
+    fi
+  ) &
+
+  local fn_remote=".tx-remote"
+  $cmd_rsync "$(which tx-remote)" "$hst_rsync:$fn_remote" &
+
+  $cmd_rsync ~/.aws "$hst_rsync": &
+
+  if [[ -d ~/.awsvault ]]; then
+    $cmd_rsync ~/.awsvault --exclude '*session*' "$hst_rsync":
+  fi &
+
+  if [[ -d ~/.op ]]; then
+    (set +f; $cmd_rsync ~/.op/* "$hst_rsync":.op/)
+  fi &
+
+  gpg2 --card-status 2>&1 | grep 'General key info' | awk '{print $NF}' | cut -d'<' -f2 | cut -d'>' -f1 | $cmd_ssh tee .env.d/CONFIG_GPG_RECIPIENT >/dev/null &
+  echo "${TERM_PROGRAM:-}" | $cmd_ssh tee .env.d/TERM_PROGRAM >/dev/null &
+  echo "${CUE_SCHEME:-}" | $cmd_ssh tee .env.d/CUE_SCHEME >/dev/null &
+
+  wait
+
+  tx title "${1:-${hst_remote}}"
+  exec ssh $hst_remote -tA ${pth_socket:+-R "${pth_socket}":/tmp/S.forwarded} \
+    -o ServerAliveInterval=30 -o ServerAliveCountMax=3 -o ControlMaster=no -S none \
+      ./$fn_remote "${nm_session}"
+}
+
+source sub "$BASH_SOURCE" "$@"

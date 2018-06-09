@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+
+function main {
+  local shome="$(cd -P -- "${BASH_SOURCE%/*}/.." && pwd -P)"
+  source "${BLOCK_PATH:-"$shome/work"}/block/script/profile" ~
+  source normalize  
+
+  local hst_remote="${1}"; shift
+  local loader="ssh $hst_remote"
+
+  while ! $loader true; do
+    sleep 1
+  done
+
+  if [[ "$hst_remote" == "localhost" ]]; then
+    return 0
+  fi
+
+  local TX_GPG="$(gpg2 --card-status 2>/dev/null | awk '/General key info/ {print $NF}' | cut -d'<' -f2 | cut -d'>' -f1 || true)"
+  if [[ -z "${TX_GPG}" ]]; then
+    return 0
+  fi
+
+  if ! $loader which gpg2; then
+    return 0
+  fi
+
+  gpg2 --export -a "$TX_GPG" | $loader gpg2 --import
+  gpg2 --export-ownertrust | $loader gpg2 --import-ownertrust
+  $loader gpg2 --check-trustdb || true
+}
+
+source sub "$BASH_SOURCE" "$@"
