@@ -8,12 +8,10 @@ function version {
 
   local ver_tmux="$(tmux -V 2>/dev/null | awk '{print $2}' || true)"
   local ver_tmuxinator="$(bundle exec tmuxinator version 2>/dev/null | awk '{print $2}' || true)"
-  local ver_tmuxp="$(tmuxp --version 2>/dev/null | awk '{print $2}' || true)"
   jq -n \
     --arg tmux "$ver_tmux" \
     --arg tmuxinator "$ver_tmuxinator" \
-    --arg tmuxp "$ver_tmuxp" \
-    '{tmux: $tmux, tmuxinator: $tmuxinator, tmuxp: $tmuxp}'
+    '{tmux: $tmux, tmuxinator: $tmuxinator}'
 }
 
 version "$@"
