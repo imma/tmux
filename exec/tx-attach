@@ -35,14 +35,20 @@ function main {
   local fn_remote=".tx-remote"
   $cmd_rsync "$(which tx-remote)" "$hst_rsync:$fn_remote" &
 
-  $cmd_rsync ~/.aws "$hst_rsync": &
+  if [[ -d ~/.aws ]]; then
+    $cmd_rsync ~/.aws "$hst_rsync": &
+  fi
 
   if [[ -d ~/.awsvault ]]; then
     $cmd_rsync ~/.awsvault --exclude '*session*' "$hst_rsync":
   fi &
 
   if [[ -d ~/.op ]]; then
-    (set +f; $cmd_rsync ~/.op/* "$hst_rsync":.op/)
+    $cmd_rsync ~/.op "$hst_rsync":
+  fi &
+
+  if [[ -d ~/.password-store ]]; then
+    $cmd_rsync ~/.password-store "$hst_rsync":
   fi &
 
   gpg2 --card-status 2>&1 | grep 'General key info' | awk '{print $NF}' | cut -d'<' -f2 | cut -d'>' -f1 | $cmd_ssh tee .env.d/CONFIG_GPG_RECIPIENT >/dev/null &
