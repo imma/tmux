@@ -7,7 +7,6 @@ function main {
   cd "$shome"
   
   block compile bundler update
-  block compile pipenv update
 }
 
 main "$@"

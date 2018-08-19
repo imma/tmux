@@ -4,3 +4,4 @@ Pipfile.lock
 Pipfile.lock
 .bundle
 Gemfile.lock
+/bin/tmuxinator

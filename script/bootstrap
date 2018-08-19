@@ -8,11 +8,8 @@ function main {
 
   block compile bundler
 
-  block compile pipenv install --three "$@"
-  local pth_tmuxp="$(pipenv run which tmuxp)"
-
   mkdir -p "$shome/bin"
-  ln -nfs "$pth_tmuxp" "$shome/bin/"
+  ln -nfs ../vendor/bundle/bin/tmuxinator "$shome/bin/"
 }
 
 main "$@"
